@@ -1,3 +1,4 @@
+import psycopg2 as pg2
 from psycopg2 import connect
 from faker import Faker
 
@@ -26,6 +27,17 @@ def create_person_table_query():
     return query
 
 
+def insert_person_table_query(id, role, first_name, middle_name, last_name,
+                              nationality):
+    query = """
+    INSERT INTO public.person(
+        id, role, first_name, middle_name, last_name, nationality)
+        VALUES ('%s', '%s', '%s', '%s', '%s', '%s');
+    """ % (id, role, first_name, middle_name, last_name, nationality)
+    print(query)
+    return query
+
+
 if __name__ == '__main__':
     print("Inject data into PostgreSQL")
 
@@ -38,7 +50,24 @@ if __name__ == '__main__':
     )
     cur = conn.cursor()
 
-    cur.execute(create_person_table_query())
+    try:
+        cur.execute(create_person_table_query())
+    except pg2.errors.DuplicateTable as e:
+        print(e)
+        print("Table already exists! Executing rollback...")
+        cur.execute("ROLLBACK")
+
+
+    cur.execute(
+        insert_person_table_query(
+            'fc909512-499e-428d-8fc1-09330b26f4c5',
+            'player',
+            'Stephen',
+            'Assassin',
+            'Curry',
+            'US'
+        )
+    )
 
     conn.commit()
 
