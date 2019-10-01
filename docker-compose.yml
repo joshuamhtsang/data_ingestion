@@ -4,7 +4,7 @@ services:
   postgres:
     image: "postgres:latest"
     environment:
-      POSTGRES_DB: data_ingestion
+      POSTGRES_DB: nba
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     volumes:
