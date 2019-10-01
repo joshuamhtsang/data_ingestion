@@ -38,6 +38,14 @@ def insert_person_table_query(id, role, first_name, middle_name, last_name,
     return query
 
 
+def get_data_person_table_query():
+    query = """
+    SELECT ps.first_name, ps.middle_name, ps.last_name, ps.role
+    FROM public.person as ps
+    """
+    return query
+
+
 if __name__ == '__main__':
     print("Inject data into PostgreSQL")
 
@@ -57,17 +65,28 @@ if __name__ == '__main__':
         print("Table already exists! Executing rollback...")
         cur.execute("ROLLBACK")
 
-
-    cur.execute(
-        insert_person_table_query(
-            'fc909512-499e-428d-8fc1-09330b26f4c5',
-            'player',
-            'Stephen',
-            'Assassin',
-            'Curry',
-            'US'
+    try:
+        cur.execute(
+            insert_person_table_query(
+                'fc909512-499e-428d-8fc1-09330b26f4c5',
+                'player',
+                'Stephen',
+                'Assassin',
+                'Curry',
+                'US'
+            )
         )
-    )
+    except pg2.errors.UniqueViolation as e:
+        print(e)
+        cur.execute("ROLLBACK")
+
+    try:
+        cur.execute(get_data_person_table_query())
+        persons = cur.fetchmany(2)
+        print(persons)
+    except Exception as e:
+        print(e)
+        cur.execute("ROLLBACK")
 
     conn.commit()
 
